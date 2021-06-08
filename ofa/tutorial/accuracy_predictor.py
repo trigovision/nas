@@ -22,7 +22,7 @@ dp_map = construct_maps(keys=(2, 3, 4))
 
 
 class AccuracyPredictor:
-    def __init__(self, pretrained=True, device='cuda:0'):
+    def __init__(self, pretrained=True, device="cuda:0"):
         self.device = device
 
         self.model = nn.Sequential(
@@ -37,9 +37,7 @@ class AccuracyPredictor:
         if pretrained:
             # load pretrained model
             fname = download_url("https://hanlab.mit.edu/files/OnceForAll/tutorial/acc_predictor.pth")
-            self.model.load_state_dict(
-                torch.load(fname, map_location=torch.device('cpu'))
-            )
+            self.model.load_state_dict(torch.load(fname, map_location=torch.device("cpu")))
         self.model = self.model.to(self.device)
 
     # TODO: merge it with serialization utils.
@@ -47,10 +45,10 @@ class AccuracyPredictor:
     def predict_accuracy(self, population):
         all_feats = []
         for sample in population:
-            ks_list = copy.deepcopy(sample['ks'])
-            ex_list = copy.deepcopy(sample['e'])
-            d_list = copy.deepcopy(sample['d'])
-            r = copy.deepcopy(sample['r'])[0]
+            ks_list = copy.deepcopy(sample["ks"])
+            ex_list = copy.deepcopy(sample["e"])
+            d_list = copy.deepcopy(sample["d"])
+            r = copy.deepcopy(sample["r"])[0]
             feats = AccuracyPredictor.spec2feats(ks_list, ex_list, d_list, r).reshape(1, -1).to(self.device)
             all_feats.append(feats)
         all_feats = torch.cat(all_feats, 0)
@@ -63,7 +61,7 @@ class AccuracyPredictor:
         start = 0
         end = 4
         for d in d_list:
-            for j in range(start+d, end):
+            for j in range(start + d, end):
                 ks_list[j] = 0
                 ex_list[j] = 0
             start += 4
