@@ -12,6 +12,7 @@ url = "http://gambit:8081/artifactory/api/pypi/pypi/simple"
 python = "^3.8.2"
 torch = "^1.8.1"
 torchvision = "^0.9.1"
+trigo-logging = "^1.11.1"
 
 [tool.poetry.dev-dependencies]
 ipdb = "^0.13.9"
