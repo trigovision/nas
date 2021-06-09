@@ -2,7 +2,11 @@
 name = "nas"
 version = "1.0.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Amit Zohar"]
+
+[[tool.poetry.source]]
+name = "gambit"
+url = "http://gambit:8081/artifactory/api/pypi/pypi/simple"
 
 [tool.poetry.dependencies]
 python = "^3.8.2"
@@ -11,6 +15,7 @@ torchvision = "^0.9.1"
 
 [tool.poetry.dev-dependencies]
 ipdb = "^0.13.9"
+tqdm = "^4.61.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
