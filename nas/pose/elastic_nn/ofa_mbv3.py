@@ -9,6 +9,7 @@ from nas.imagenet_classification.elastic_nn.modules.dynamic_layers import (
     DynamicMBConvLayer,
 )
 from nas.pose.networks.mobilenet_v3 import PMobileNetV3
+from nas.pose.networks.pose import PAC_EMBEDDING_DIM
 from nas.utils import make_divisible, MyNetwork, val2list
 from nas.utils.layers import (
     ConvLayer,
@@ -27,6 +28,12 @@ class POFAMobileNetV3(PMobileNetV3):
         expand_ratio_list=6,
         depth_list=4,
     ):
+
+        # These constants are needed for Pose training
+        self.num_paf_stages = 1
+        self.num_pac_stages = 1
+        self.num_heatmap_stages = 1
+        self.num_pacs = PAC_EMBEDDING_DIM
 
         self.width_mult = width_mult
         self.ks_list = val2list(ks_list, 1)
@@ -129,9 +136,6 @@ class POFAMobileNetV3(PMobileNetV3):
         # first conv
         x = self.first_conv(x)
         # first block
-        import ipdb
-
-        ipdb.set_trace()
         x = self.blocks[0](x)
         # blocks
         for stage_id, block_idx in enumerate(self.block_group_info):

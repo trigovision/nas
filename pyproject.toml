@@ -18,6 +18,13 @@ trigo-logging = "^1.11.1"
 ipdb = "^0.13.9"
 tqdm = "^4.61.0"
 pose = {path = "../pose", develop = true}
+clearml = "^1.0.3"
+pandas = "^1.2.4"
+sklearn = "^0.0"
+streamlit = "^0.82.0"
+pose-benchmark = "1.0.6"
+boto3 = "^1.17.90"
+tensorboardX = "^2.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

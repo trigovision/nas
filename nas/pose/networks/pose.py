@@ -132,4 +132,4 @@ class PoseHeads(nn.Module):
         pacs = self.pac_head(x)
         heatmaps = self.kp_head(torch.cat([x, pafs], dim=1))
 
-        return pafs, pacs, heatmaps
+        return [heatmaps], [pafs], [pacs]
