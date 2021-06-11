@@ -613,6 +613,7 @@ class ResNetBottleneckBlock(MyModule):
         act_func="relu",
         groups=1,
         downsample_mode="avgpool_conv",
+        dilation=1,
     ):
         super(ResNetBottleneckBlock, self).__init__()
 
@@ -621,6 +622,7 @@ class ResNetBottleneckBlock(MyModule):
 
         self.kernel_size = kernel_size
         self.stride = stride
+        self.dilation = dilation
         self.expand_ratio = expand_ratio
         self.mid_channels = mid_channels
         self.act_func = act_func
@@ -647,11 +649,23 @@ class ResNetBottleneckBlock(MyModule):
             )
         )
 
-        pad = get_same_padding(self.kernel_size)
+        pad = get_same_padding(self.kernel_size, self.dilation)
         self.conv2 = nn.Sequential(
             OrderedDict(
                 [
-                    ("conv", nn.Conv2d(feature_dim, feature_dim, kernel_size, stride, pad, groups=groups, bias=False)),
+                    (
+                        "conv",
+                        nn.Conv2d(
+                            feature_dim,
+                            feature_dim,
+                            kernel_size,
+                            stride,
+                            pad,
+                            dilation=dilation,
+                            groups=groups,
+                            bias=False,
+                        ),
+                    ),
                     ("bn", nn.BatchNorm2d(feature_dim)),
                     ("act", build_activation(self.act_func, inplace=True)),
                 ]
@@ -667,13 +681,13 @@ class ResNetBottleneckBlock(MyModule):
             )
         )
 
-        if stride == 1 and in_channels == out_channels:
+        if stride == 1 and dilation == 1 and in_channels == out_channels:
             self.downsample = IdentityLayer(in_channels, out_channels)
-        elif self.downsample_mode == "conv":
+        elif self.downsample_mode == "conv" or dilation > 1:
             self.downsample = nn.Sequential(
                 OrderedDict(
                     [
-                        ("conv", nn.Conv2d(in_channels, out_channels, 1, stride, 0, bias=False)),
+                        ("conv", nn.Conv2d(in_channels, out_channels, 1, stride, 0, dilation=dilation, bias=False)),
                         ("bn", nn.BatchNorm2d(out_channels)),
                     ]
                 )
@@ -707,7 +721,7 @@ class ResNetBottleneckBlock(MyModule):
     @property
     def module_str(self):
         return "(%s, %s)" % (
-            "%dx%d_BottleneckConv_%d->%d->%d_S%d_G%d"
+            "%dx%d_BottleneckConv_%d->%d->%d_S%d_d%d_G%d"
             % (
                 self.kernel_size,
                 self.kernel_size,
@@ -715,6 +729,7 @@ class ResNetBottleneckBlock(MyModule):
                 self.mid_channels,
                 self.out_channels,
                 self.stride,
+                self.dilation,
                 self.groups,
             ),
             "Identity" if isinstance(self.downsample, IdentityLayer) else self.downsample_mode,
@@ -728,6 +743,7 @@ class ResNetBottleneckBlock(MyModule):
             "out_channels": self.out_channels,
             "kernel_size": self.kernel_size,
             "stride": self.stride,
+            "dilation": self.dilation,
             "expand_ratio": self.expand_ratio,
             "mid_channels": self.mid_channels,
             "act_func": self.act_func,

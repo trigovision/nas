@@ -500,6 +500,7 @@ class DynamicResNetBottleneckBlock(MyModule):
         stride=1,
         act_func="relu",
         downsample_mode="avgpool_conv",
+        dilation=1,
     ):
         super(DynamicResNetBottleneckBlock, self).__init__()
 
@@ -509,6 +510,7 @@ class DynamicResNetBottleneckBlock(MyModule):
 
         self.kernel_size = kernel_size
         self.stride = stride
+        self.dilation = dilation
         self.act_func = act_func
         self.downsample_mode = downsample_mode
 
@@ -536,7 +538,7 @@ class DynamicResNetBottleneckBlock(MyModule):
                 [
                     (
                         "conv",
-                        DynamicConv2d(max_middle_channel, max_middle_channel, kernel_size, stride),
+                        DynamicConv2d(max_middle_channel, max_middle_channel, kernel_size, stride, dilation=dilation),
                     ),
                     ("bn", DynamicBatchNorm2d(max_middle_channel)),
                     ("act", build_activation(self.act_func, inplace=True)),
@@ -556,9 +558,9 @@ class DynamicResNetBottleneckBlock(MyModule):
             )
         )
 
-        if self.stride == 1 and self.in_channel_list == self.out_channel_list:
+        if self.stride == 1 and self.dilation == 1 and self.in_channel_list == self.out_channel_list:
             self.downsample = IdentityLayer(max(self.in_channel_list), max(self.out_channel_list))
-        elif self.downsample_mode == "conv":
+        elif self.downsample_mode == "conv" or self.dilation > 1:
             self.downsample = nn.Sequential(
                 OrderedDict(
                     [
@@ -568,6 +570,7 @@ class DynamicResNetBottleneckBlock(MyModule):
                                 max(self.in_channel_list),
                                 max(self.out_channel_list),
                                 stride=stride,
+                                dilation=dilation,
                             ),
                         ),
                         ("bn", DynamicBatchNorm2d(max(self.out_channel_list))),
@@ -575,6 +578,7 @@ class DynamicResNetBottleneckBlock(MyModule):
                 )
             )
         elif self.downsample_mode == "avgpool_conv":
+            assert self.dilation == 1
             self.downsample = nn.Sequential(
                 OrderedDict(
                     [
@@ -625,13 +629,14 @@ class DynamicResNetBottleneckBlock(MyModule):
     @property
     def module_str(self):
         return "(%s, %s)" % (
-            "%dx%d_BottleneckConv_in->%d->%d_S%d"
+            "%dx%d_BottleneckConv_in->%d->%d_S%d_d%d"
             % (
                 self.kernel_size,
                 self.kernel_size,
                 self.active_middle_channels,
                 self.active_out_channel,
                 self.stride,
+                self.dilation,
             ),
             "Identity" if isinstance(self.downsample, IdentityLayer) else self.downsample_mode,
         )
@@ -645,6 +650,7 @@ class DynamicResNetBottleneckBlock(MyModule):
             "expand_ratio_list": self.expand_ratio_list,
             "kernel_size": self.kernel_size,
             "stride": self.stride,
+            "dilation": self.dilation,
             "act_func": self.act_func,
             "downsample_mode": self.downsample_mode,
         }
@@ -709,6 +715,7 @@ class DynamicResNetBottleneckBlock(MyModule):
             "out_channels": self.active_out_channel,
             "kernel_size": self.kernel_size,
             "stride": self.stride,
+            "dilation": self.dilation,
             "expand_ratio": self.active_expand_ratio,
             "mid_channels": self.active_middle_channels,
             "act_func": self.act_func,

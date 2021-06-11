@@ -121,7 +121,7 @@ class POFAMobileNetV3(PMobileNetV3):
         super(POFAMobileNetV3, self).__init__(first_conv, blocks, final_expand_layer)
 
         # set bn param
-        self.set_bn_param(momentum=bn_param[0], eps=bn_param[1])
+        # self.set_bn_param(momentum=bn_param[0], eps=bn_param[1])
 
         # runtime_depth
         self.runtime_depth = [len(block_idx) for block_idx in self.block_group_info]
@@ -313,7 +313,7 @@ class POFAMobileNetV3(PMobileNetV3):
             blocks += stage_blocks
 
         _subnet = PMobileNetV3(first_conv, blocks, final_expand_layer)
-        _subnet.set_bn_param(**self.get_bn_param())
+        # _subnet.set_bn_param(**self.get_bn_param())
         return _subnet
 
     def get_active_net_config(self):

@@ -1,13 +1,16 @@
 import argparse
 
 import torch
+from pose.models.backbones.resnet50_full import resnet50_full
 from torch import nn
 
-from nas.imagenet_classification.elastic_nn.networks import OFAMobileNetV3
-from nas.imagenet_classification.networks import MobileNetV3Large
+from nas.imagenet_classification.elastic_nn.networks import OFAMobileNetV3, OFAResNets
+from nas.imagenet_classification.networks import MobileNetV3Large, ResNet50
 from nas.pose.elastic_nn.ofa_mbv3 import POFAMobileNetV3
+from nas.pose.elastic_nn.ofa_resnet import POFAResNet
 from nas.pose.latency_estimator.build_latency_table import calculate_layer_latency, IMAGE_SIZE
 from nas.pose.networks.mobilenet_v3 import PMobileNetV3Large
+from nas.pose.networks.resnet import PResNet50
 
 
 class DummyBackbone(nn.Module):
@@ -28,12 +31,17 @@ if __name__ == "__main__":
 
     torch.set_grad_enabled(False)
 
-    model = PMobileNetV3Large(
-        width_mult=1.0,
-        ks=7,
-        expand_ratio=6,
-        depth_param=4,
-    )
+    # model = OFAResNets(
+    #     depth_list=[0, 1, 2],
+    #     expand_ratio_list=[0.2, 0.25, 0.35],
+    #     width_mult_list=[0.65, 0.85, 1.0],
+    # )
+    # model = PResNet50(width_mult=1.0, expand_ratio=0.35, depth_param=2)
+    model2 = resnet50_full()
+    model = POFAResNet(expand_ratio_list=0.25, depth_list=0)
+    import ipdb
+
+    ipdb.set_trace()
 
     input_size = [args.batch_size, 3] + IMAGE_SIZE
     latency_info = calculate_layer_latency(
